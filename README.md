@@ -1,2 +1,4 @@
 # cs354
-COMP SCI 354 @ University of Wisconsin–Madison
+* University of Wisconsin-Madison
+* Fall 2023
+* { TBD } 
