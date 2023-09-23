@@ -103,7 +103,7 @@ int valid_board(int **board, int size)
     for (int i = 0; i < size; i++)
     {
         // create an array to keep track of which numbers have been seen
-        int seen[size];
+        int seen = malloc(sizeof(int) * size);
         for (int j = 0; j < size; j++)
         {
             *(seen + j) = 0;
@@ -133,7 +133,7 @@ int valid_board(int **board, int size)
     for (int i = 0; i < size; i++)
     {
         // create an array to keep track of which numbers have been seen
-        int seen[size];
+        int seen = malloc(sizeof(int) * size);
         for (int j = 0; j < size; j++)
         {
             *(seen + j) = 0;
