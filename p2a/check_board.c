@@ -24,7 +24,7 @@
 //
 /////////////////////////// OTHER SOURCES OF HELP //////////////////////////////
 //                   Fully acknowledge and credit all sources of help,
-//                   including family, friencs, classmates, tutors,
+//                   including family, friends, classmates, tutors,
 //                   Peer Mentors, TAs, and Instructor.
 //
 // Persons:          Identify persons by name, relationship to you, and email.
@@ -95,15 +95,11 @@ int valid_board(int **board, int size)
         exit(1);
     }
 
-    // the first line in the file is the size of the board
-    // we don't need to check that the board is square because
-    // the get_board_size function already does that for us
-
     // check each row for duplicates, using pointer arithmetic
     for (int i = 0; i < size; i++)
     {
         // create an array to keep track of which numbers have been seen
-        int seen = malloc(sizeof(int) * size);
+        int *seen = (int *)malloc(sizeof(int) * size);
         for (int j = 0; j < size; j++)
         {
             *(seen + j) = 0;
@@ -120,6 +116,7 @@ int valid_board(int **board, int size)
                 {
                     return 0;
                 }
+                // otherwise
                 else
                 {
                     // mark the current number as seen
@@ -133,7 +130,7 @@ int valid_board(int **board, int size)
     for (int i = 0; i < size; i++)
     {
         // create an array to keep track of which numbers have been seen
-        int seen = malloc(sizeof(int) * size);
+        int *seen = malloc(sizeof(int) * size);
         for (int j = 0; j < size; j++)
         {
             *(seen + j) = 0;
@@ -151,6 +148,7 @@ int valid_board(int **board, int size)
                     return 0;
                 }
                 else
+                // otherwise
                 {
                     // mark the current number as seen
                     *(seen + *(*(board + j) + i) - 1) = 1;
@@ -158,6 +156,9 @@ int valid_board(int **board, int size)
             }
         }
     }
+
+    // free(seen); we don't need to free this because it is freed at the end of the loop because it goes out of scope
+
 
     // if we get here, no duplicates were found and the board is valid
     return 1;
@@ -193,7 +194,6 @@ int main(int argc, char **argv)
         exit(1);
     }
 
-    // Declare local variables.
     int size;
     int **board;
 
@@ -250,14 +250,10 @@ int main(int argc, char **argv)
     }
 
     // TODO: Free all dynamically allocated memory.
-
-    // free memory allocated for board array
     for (int i = 0; i < size; i++)
     {
         free(*(board + i));
     }
-
-    // free memory allocated for board pointer array
     free(board);
 
     // Close the file.
