@@ -7,4 +7,5 @@ include_directories(.)
 include_directories(given_tests)
 
 add_executable(p2a
-        check_board.c)
+        check_board.c
+        myMagicSquare.c)

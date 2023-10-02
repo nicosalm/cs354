@@ -1,0 +1,3 @@
+/Users/nicosalm/dev/cs354/p2a/cmake-build-debug/CMakeFiles/p2a.dir
+/Users/nicosalm/dev/cs354/p2a/cmake-build-debug/CMakeFiles/edit_cache.dir
+/Users/nicosalm/dev/cs354/p2a/cmake-build-debug/CMakeFiles/rebuild_cache.dir
