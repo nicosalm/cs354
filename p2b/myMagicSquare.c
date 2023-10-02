@@ -210,8 +210,8 @@ int main(int argc, char **argv)
 
     MagicSquare *magic_square = generateMagicSquare(size);
 
-    // Output the magic square
-    fileOutputMagicSquare(magic_square, argv[1]);
+    // Output the magic square using pointer arithmetic
+    fileOutputMagicSquare(magic_square, *(argv + 1));
 
     // free allocated memory
     for (int i = 0; i < size; i++)
