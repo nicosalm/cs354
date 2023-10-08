@@ -6,7 +6,28 @@
 //
 ///////////////////////////////////////////////////////////////////////////////
 
-// TODO: header info
+////////////////////////////////////////////////////////////////////////////////
+// Main File:        cs354heap.c
+// This File:        cs354heap.c
+// Other Files:      No core files, tests/*.c (Tests)
+// Semester:         CS 354 Fall 2023
+// Instructor:       Mark Mansi
+//
+// Author:           Nico Salm
+// Email:            nbsalm@wisc.edu
+// CS Login:         salm
+// GG#:              n/a
+//                   (See https://canvas.wisc.edu/groups for your GG number)
+//
+/////////////////////////// OTHER SOURCES OF HELP //////////////////////////////
+//                   Fully acknowledge and credit all sources of help,
+//                   including family, friends, classmates, tutors,
+//                   Peer Mentors, TAs, and Instructor.
+//
+// Persons:          NONE
+//
+// Online sources:   NONE
+////////////////////////////////////////////////////////////////////////////////
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -37,16 +58,15 @@
  */
 #define MIN_BLOCK_SIZE (sizeof(BlockHeader) + MIN_PAYLOAD_SIZE)
 
-
 /*
  * A bitmask to help us get the p-bit from header blocks.
  */
-#define P_BITMASK (1<<0)
+#define P_BITMASK (1 << 0)
 
 /*
  * A bitmask to help us get the a-bit from header blocks.
  */
-#define A_BITMASK (1<<1)
+#define A_BITMASK (1 << 1)
 
 /*
  * A bitmask to help us get the size from header blocks.
@@ -95,48 +115,49 @@
  * On a 32-bit machine, this struct should be 8B. That allows us to have less
  * math to do to keep all blocks 8B-aligned.
  */
-typedef struct BlockHeader {
-  // The size and status bits of this block header.
-  //
-  // NOTE: Be careful when working with the size: be consistent! Is the size
-  // representing the whole block? Or just the payload?
-  //
-  // Recall that size_t is an unsigned integer type that is large enough to
-  // represent any possible amount of memory we could want.
-  //
-  // The bits are used as followed:
-  //
-  // 31               16 15                0
-  // SSSS SSSS SSSS SSSS SSSS SSSS SSSS S0AP
-  //
-  // Bits 31 to 3: the block size (always divisible by 8)
-  // Bit        2: unused, always 0 except for the end mark
-  // Bit        1: the A bit -- 0 if this block is free; 1 if used
-  // Bit        0: the P bit -- 0 if prev block is free; 1 if used
-  //
-  // To avoid confusion about which bit is which and whether 1 is free or used,
-  // we have defined a few constants for you above:
-  //
-  // - SIZE_BITMASK, P_BITMASK, A_BITMASK: these are "bitmasks" -- you can use
-  //    them with bitwise operations to extract only the bits you want from
-  //    size_status. For example,
-  //
-  //        header->size_status & SIZE_BITMASK
-  //        header->size_status & P_BITMASK
-  //
-  // - ABIT_FREE, ABIT_USED -- these are integers with the right bit set or not
-  //    set. You can use them to set the correct value when writing to block
-  //    headers, assuming that we start with a header that has the bit cleared
-  //    to begin with. For example,
-  //
-  //        header->size_status |= ABIT_USED
-  //
-  // - PBIT_FREE, PBIT_USED -- same, but for the P-bit.
-  //
-  size_t size_status;
+typedef struct BlockHeader
+{
+    // The size and status bits of this block header.
+    //
+    // NOTE: Be careful when working with the size: be consistent! Is the size
+    // representing the whole block? Or just the payload?
+    //
+    // Recall that size_t is an unsigned integer type that is large enough to
+    // represent any possible amount of memory we could want.
+    //
+    // The bits are used as followed:
+    //
+    // 31               16 15                0
+    // SSSS SSSS SSSS SSSS SSSS SSSS SSSS S0AP
+    //
+    // Bits 31 to 3: the block size (always divisible by 8)
+    // Bit        2: unused, always 0 except for the end mark
+    // Bit        1: the A bit -- 0 if this block is free; 1 if used
+    // Bit        0: the P bit -- 0 if prev block is free; 1 if used
+    //
+    // To avoid confusion about which bit is which and whether 1 is free or used,
+    // we have defined a few constants for you above:
+    //
+    // - SIZE_BITMASK, P_BITMASK, A_BITMASK: these are "bitmasks" -- you can use
+    //    them with bitwise operations to extract only the bits you want from
+    //    size_status. For example,
+    //
+    //        header->size_status & SIZE_BITMASK
+    //        header->size_status & P_BITMASK
+    //
+    // - ABIT_FREE, ABIT_USED -- these are integers with the right bit set or not
+    //    set. You can use them to set the correct value when writing to block
+    //    headers, assuming that we start with a header that has the bit cleared
+    //    to begin with. For example,
+    //
+    //        header->size_status |= ABIT_USED
+    //
+    // - PBIT_FREE, PBIT_USED -- same, but for the P-bit.
+    //
+    size_t size_status;
 
-  // Unused, only makes the header 8B, so that we have less math to do.
-  size_t padding;
+    // Unused, only makes the header 8B, so that we have less math to do.
+    size_t padding;
 } BlockHeader;
 
 /*
@@ -172,7 +193,8 @@ typedef struct BlockHeader {
  *     }
  * };
  */
-typedef struct BlockFooter {
+typedef struct BlockFooter
+{
     struct BlockFooter *free_list_prev;
     struct BlockFooter *free_list_next;
     size_t size;
@@ -232,10 +254,11 @@ BlockFooter *free_list = NULL;
  * Returns:
  * - true if and only if header is actually the end mark
  */
-static int is_end_mark(BlockHeader *header) {
-  // We need to explicitly ignore the p-bit because adjacent blocks may set it
-  // as they are freed/allocated.
-  return (header->size_status & ~P_BITMASK) == END_MARK_MAGIC;
+static int is_end_mark(BlockHeader *header)
+{
+    // We need to explicitly ignore the p-bit because adjacent blocks may set it
+    // as they are freed/allocated.
+    return (header->size_status & ~P_BITMASK) == END_MARK_MAGIC;
 }
 
 /*
@@ -249,13 +272,15 @@ static int is_end_mark(BlockHeader *header) {
  * - pbit: the value of the p-bit, shifted by the right amount. It's recommended
  *         to always call this function with either PBIT_FREE or PBIT_USED.
  */
-static void set_block_header(BlockHeader *header, size_t size, int abit, int pbit) {
+static void set_block_header(BlockHeader *header, size_t size, int abit, int pbit)
+{
     // Some sanity checking
     assert((size % 8) == 0);
     assert((abit & ~A_BITMASK) == 0);
     assert((pbit & ~P_BITMASK) == 0);
 
-    // TODO (optional)
+    // set the size and status
+    header->size_status = size | abit | pbit;
 }
 
 /*
@@ -267,9 +292,9 @@ static void set_block_header(BlockHeader *header, size_t size, int abit, int pbi
  * Return:
  * - the size of the block
  */
-static size_t get_block_size(BlockHeader *header) {
-    // TODO (optional)
-    return 0;
+static size_t get_block_size(BlockHeader *header)
+{
+    return header->size_status & SIZE_BITMASK;
 }
 
 /*
@@ -282,9 +307,9 @@ static size_t get_block_size(BlockHeader *header) {
  * - the A-bit of the block. That is, the value returned will be either
  *   ABIT_FREE or ABIT_USED.
  */
-static int get_block_abit(BlockHeader *header) {
-    // TODO (optional)
-    return 0;
+static int get_block_abit(BlockHeader *header)
+{
+    return (header->size_status & A_BITMASK) ? ABIT_USED : ABIT_FREE;
 }
 
 /*
@@ -296,8 +321,16 @@ static int get_block_abit(BlockHeader *header) {
  * - abit: the value of the a-bit, shifted by the right amount. It's recommended
  *         to always call this function with either ABIT_FREE or ABIT_USED.
  */
-static void set_block_abit(BlockHeader *header, int abit) {
-    // TODO (optional)
+static void set_block_abit(BlockHeader *header, int abit)
+{
+    if (abit == ABIT_FREE)
+    {
+        header->size_status &= ~ABIT_USED;
+    }
+    else
+    {
+        header->size_status |= ABIT_USED;
+    }
 }
 
 /*
@@ -310,9 +343,9 @@ static void set_block_abit(BlockHeader *header, int abit) {
  * - the P-bit of the block. That is, the value returned will be either
  *   PBIT_FREE or PBIT_USED.
  */
-static int get_block_pbit(BlockHeader *header) {
-    // TODO (optional)
-    return 0;
+static int get_block_pbit(BlockHeader *header)
+{
+    return (header->size_status & P_BITMASK) ? PBIT_USED : PBIT_FREE;
 }
 
 /*
@@ -324,8 +357,18 @@ static int get_block_pbit(BlockHeader *header) {
  * - pbit: the value of the p-bit, shifted by the right amount. It's recommended
  *         to always call this function with either PBIT_FREE or PBIT_USED.
  */
-static void set_block_pbit(BlockHeader *header, int pbit) {
-    // TODO (optional)
+static void set_block_pbit(BlockHeader *header, int pbit)
+{
+    // if the p-bit is free, clear the used bit
+    if (pbit == PBIT_FREE)
+    {
+        header->size_status &= ~PBIT_USED;
+    }
+    // otherwise, set the used bit
+    else
+    {
+        header->size_status |= PBIT_USED;
+    }
 }
 
 /*
@@ -338,9 +381,9 @@ static void set_block_pbit(BlockHeader *header, int pbit) {
  * - a pointer to the first byte of the payload. In other words, if this block
  *   was allocated, this is the pointer we would return from balloc.
  */
-static void *get_block_payload(BlockHeader *header) {
-    // TODO (optional)
-    return NULL;
+static void *get_block_payload(BlockHeader *header)
+{
+    return (void *)(header + 1);
 }
 
 /*
@@ -373,9 +416,10 @@ static void *get_block_payload(BlockHeader *header) {
  * Return:
  * - the block that starts at the address after the end of this block.
  */
-static BlockHeader *get_next_adjacent_block(BlockHeader *header) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *get_next_adjacent_block(BlockHeader *header)
+{
+    // calculates the address of the next block header by moving past the current header and the payload
+    return (BlockHeader *)(((char *)header) + sizeof(BlockHeader) + get_block_size(header));
 }
 
 /*
@@ -388,9 +432,10 @@ static BlockHeader *get_next_adjacent_block(BlockHeader *header) {
  * Returns:
  * - a pointer to the block header corresponding to the payload.
  */
-static BlockHeader *get_header_from_payload(void *payload) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *get_header_from_payload(void *payload)
+{
+    // go back in memory by the size of the header to get the address of the header
+    return (BlockHeader *)(((char *)payload) - sizeof(BlockHeader));
 }
 
 /*
@@ -405,9 +450,16 @@ static BlockHeader *get_header_from_payload(void *payload) {
  * Returns:
  * - a pointer to the block footer of this block
  */
-static BlockFooter *find_block_footer(BlockHeader *header) {
-    // TODO (optional)
-    return NULL;
+static BlockFooter *find_block_footer(BlockHeader *header)
+{
+    // extract the size of the block from the header
+    size_t size = get_block_size(header);
+
+    // point to byte after the block
+    char *footer_address = ((char *)header) + sizeof(BlockHeader) + size; // ??
+
+    // go back in memory by the size of the footer to get the address of the footer
+    return (BlockFooter *)(footer_address - sizeof(BlockFooter));
 }
 
 /*
@@ -422,9 +474,14 @@ static BlockFooter *find_block_footer(BlockHeader *header) {
  * Returns:
  * - a pointer to the corresponding block header for the block containing this footer.
  */
-static BlockHeader *find_block_header(BlockFooter *footer) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *find_block_header(BlockFooter *footer)
+{
+    size_t block_size = footer->size;
+
+    // calculate the address of the header by moving back in memory by the size of the header
+    char *header_address = ((char *)footer) - block_size - sizeof(BlockFooter);
+
+    return (BlockHeader *)header_address;
 }
 
 /*
@@ -433,9 +490,22 @@ static BlockHeader *find_block_header(BlockFooter *footer) {
  * NOTE: this only works if the previous block is FREE because we need a valid
  * footer! Check your p-bits!
  */
-static BlockHeader *get_prev_adjacent_block(BlockHeader *header) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *get_prev_adjacent_block(BlockHeader *header)
+{
+    // the footer of the previous block is right before the header of the current block
+    BlockFooter *prev_footer = (BlockFooter *)(((char *)header) - sizeof(BlockFooter));
+
+    // need to check if the previous block is free
+    if (get_block_pbit(get_header_from_payload(prev_footer)) == PBIT_FREE)
+    {
+        // if it is free we can return the header of the previous block
+        return find_block_header(prev_footer);
+    }
+    else
+    {
+        // if the previous block is not free, we can't
+        return NULL;
+    }
 }
 
 /*
@@ -445,8 +515,9 @@ static BlockHeader *get_prev_adjacent_block(BlockHeader *header) {
  * - footer: a pointer to the footer we want to modify
  * - size: the size of the block
  */
-static void set_block_footer_size(BlockFooter *footer, size_t size) {
-    // TODO (optional)
+static void set_block_footer_size(BlockFooter *footer, size_t size)
+{
+    footer->size = size;
 }
 
 /*
@@ -468,9 +539,30 @@ static void set_block_footer_size(BlockFooter *footer, size_t size) {
  *   matches the requested payload size.
  * - NULL if there is no large-enough block.
  */
-static BlockHeader *best_fit_select_block(size_t size) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *best_fit_select_block(size_t size)
+{
+    BlockHeader *curr = heap_start;
+    BlockHeader *best_fit = NULL;
+    size_t best_size = SIZE_MAX; // largest possible size_t value
+
+    // now this is a simple linear search
+    while (!is_end_mark(curr))
+    {
+        size_t curr_size = get_block_size(curr);
+
+        // check if the block is free and large enough
+        if (get_block_abit(curr) == ABIT_FREE && curr_size >= size && curr_size < best_size)
+        {
+            // if it is, update the best fit
+            best_fit = curr;
+            best_size = curr_size;
+        }
+
+        // move to the next block
+        curr = get_next_adjacent_block(curr);
+    }
+
+    return best_fit; // NULL if no large-enough block
 }
 
 /*
@@ -491,10 +583,11 @@ static BlockHeader *best_fit_select_block(size_t size) {
  *
  * Returns: the rounded integer
  */
-static size_t round_up_block_size(size_t unrounded) {
+static size_t round_up_block_size(size_t unrounded)
+{
     size_t almost_too_far = unrounded + BLOCK_ALIGNMENT - 1;
     size_t remainder = almost_too_far % BLOCK_ALIGNMENT;
-    return almost_too_far - remainder;
+    return almost_too_far - remainder; // ?? Could use bitwise operations instead
 }
 
 /*
@@ -505,8 +598,36 @@ static size_t round_up_block_size(size_t unrounded) {
  * Parameters:
  * - header: the header of a free block to remove from the free list.
  */
-static void remove_from_free_list(BlockHeader *header) {
-    // TODO (optional)
+static void remove_from_free_list(BlockHeader *header)
+{
+
+    // make sure the block is free
+    assert(get_block_abit(header) == ABIT_FREE); // ?? could use more robust error handling
+
+    // get the footer of the block
+    BlockFooter *footer = find_block_footer(header);
+
+    // retrieve the previous and next blocks from the footer
+    BlockHeader *prev = footer->free_list_prev;
+    BlockHeader *next = footer->free_list_next;
+
+    if (prev)
+    {
+        // update the previous block's next pointer
+        BlockFooter *prev_footer = find_block_footer(prev);
+        prev_footer->free_list_next = next;
+    }
+
+    if (next)
+    {
+        // update the next block's previous pointer
+        BlockFooter *next_footer = find_block_footer(next);
+        next_footer->free_list_prev = prev;
+    }
+
+    // clear the pointers in the footer
+    footer->free_list_prev = NULL;
+    footer->free_list_next = NULL;
 }
 
 /*
@@ -515,8 +636,25 @@ static void remove_from_free_list(BlockHeader *header) {
  * Parameters:
  * - header: the header of a free block to add to the free list.
  */
-static void add_to_free_list(BlockHeader *header) {
-    // TODO (optional)
+static void add_to_free_list(BlockHeader *header)
+{
+    // make sure the block is free
+    assert(get_block_abit(header) == ABIT_FREE); // ?? could use more robust error handling
+
+    // get the footer of the block
+    BlockFooter *footer = find_block_footer(header);
+
+    // if there is a current head of the free list, update its previous pointer
+    if (free_list)
+    {
+        BlockFooter *curr_head_footer = find_block_footer(free_list);
+        curr_head_footer->free_list_prev = header;
+        footer->free_list_next = free_list;
+    }
+
+    // update the free list head
+    free_list = header;
+    footer->free_list_prev = NULL; // it's the head, so there is no previous block
 }
 
 /*
@@ -528,8 +666,21 @@ static void add_to_free_list(BlockHeader *header) {
  * Parameters:
  * - header: the header of the block we wish to mark as used.
  */
-static void make_block_used(BlockHeader *header) {
-    // TODO (optional)
+static void make_block_used(BlockHeader *header)
+{
+    header->size_status |= ABIT_USED;
+
+    // for PART B, we need to remove the block from the free list
+    // remove_from_free_list(header);
+
+    // get neighbor block
+    BlockHeader *neighbor = get_next_adjacent_block(header);
+
+    // if the neighbor is not the end mark, set its p-bit
+    if (!is_end_mark(neighbor))
+    {
+        set_block_pbit(neighbor, PBIT_USED);
+    }
 }
 
 /*
@@ -541,8 +692,24 @@ static void make_block_used(BlockHeader *header) {
  * Parameters:
  * - header: the header of the block we wish to mark as free.
  */
-static void make_block_free(BlockHeader *header) {
-    // TODO (optional)
+static void make_block_free(BlockHeader *header)
+{
+    header->size_status &= ~ABIT_USED;
+
+    // update the footer
+    BlockFooter *footer = find_block_footer(header);
+    footer->free_list_prev = NULL;
+    footer->free_list_next = NULL;
+
+    // for PART B, we need to add the block to the free list
+    // add_to_free_list(header);
+
+    // get neighbor block
+    BlockHeader *neighbor = get_next_adjacent_block(header);
+    if (!is_end_mark(neighbor))
+    {
+        set_block_pbit(neighbor, PBIT_FREE);
+    }
 }
 
 /*
@@ -561,9 +728,10 @@ static void make_block_free(BlockHeader *header) {
  * desired_size and still have enough space for an entire other block with its
  * header.
  */
-static int should_split(BlockHeader *header, size_t desired_size) {
-    // TODO (optional)
-    return 0;
+static int should_split(BlockHeader *header, size_t desired_size)
+{
+    // we simply need to compare the size of the block to the desired size plus the minimum block size
+    return get_block_size(header) >= desired_size + MIN_BLOCK_SIZE;
 }
 
 /*
@@ -585,9 +753,40 @@ static int should_split(BlockHeader *header, size_t desired_size) {
  * - a pointer to the header of the newly created remainder block if the block
  *   was split.
  */
-static BlockHeader *split_block(BlockHeader *header, size_t desired_size) {
-    // TODO (optional)
-    return NULL;
+static BlockHeader *split_block(BlockHeader *header, size_t desired_size)
+{
+    if (!should_split(header, desired_size))
+    {
+        return NULL;
+    }
+
+    // calculate the size of the remainder block
+    size_t remainder_size = get_block_size(header) - desired_size - sizeof(BlockHeader);
+
+    // update the size of the original block
+    set_block_header(header, desired_size, ABIT_USED, PBIT_USED);
+
+    // calculate the address of the remainder block
+    BlockHeader *remainder = get_next_adjacent_block(header);
+
+    // update the size of the remainder block
+    set_block_header(remainder, remainder_size, ABIT_FREE, PBIT_USED);
+
+    // update the footer of the remainder block
+    BlockFooter *remainder_footer = find_block_footer(remainder);
+    set_block_footer_size(remainder_footer, remainder_size);
+
+    // update the P bit of the next block
+    BlockHeader *next_block = get_next_adjacent_block(remainder);
+    if (!is_end_mark(next_block))
+    {
+        set_block_pbit(next_block, PBIT_FREE);
+    }
+
+    // for PART B, we need to add the remainder block to the free list
+    // add_to_free_list(remainder);
+
+    return remainder;
 }
 
 /*
@@ -600,8 +799,32 @@ static BlockHeader *split_block(BlockHeader *header, size_t desired_size) {
  * - header: the block that comes first in the heap spatially (not first in the
  *   free list).
  */
-static void coalesce_with_next_block(BlockHeader *header) {
-    // TODO (optional)
+static void coalesce_with_next_block(BlockHeader *header)
+{
+    // retrieve the next block
+    BlockHeader *next_block = get_next_adjacent_block(header);
+
+    // ensure the curr and next blocks are free
+    if (get_block_abit(header) != ABIT_FREE || get_block_abit(next_block) != ABIT_FREE)
+    {
+        return; // if either block is not free, we can't coalesce
+    }
+
+    // update the size of the current block
+    size_t new_size = get_block_size(header) + get_block_size(next_block) + sizeof(BlockHeader);
+    set_block_header(header, new_size, ABIT_FREE, get_block_pbit(header));
+
+    // update the footer of the current block
+    BlockFooter *footer = find_block_footer(header);
+    set_block_footer_size(footer, new_size);
+
+    // handle free list pointers
+
+    // remove the next block from the free list
+    remove_from_free_list(next_block);
+
+    // add the current block to the free list
+    add_to_free_list(header);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -645,9 +868,44 @@ static void coalesce_with_next_block(BlockHeader *header) {
  * - NULL on failure
  *
  */
-void* balloc(size_t size) {
-    // TODO (required)
-    return NULL;
+void *balloc(size_t size)
+{
+    if (size < 1)
+    {
+        return NULL;
+    }
+
+    // round up the size
+    size_t rounded_size = round_up_block_size(size);
+    if (rounded_size < MIN_BLOCK_SIZE)
+    {
+        rounded_size = MIN_BLOCK_SIZE;
+    }
+
+    // find the best fit block
+    BlockHeader *best_fit = best_fit_select_block(rounded_size);
+
+    // check if there is a best fit block
+    if (!best_fit)
+    {
+        return NULL;
+    }
+
+    // check if the best fit block is an exact match
+    if (should_split(best_fit, rounded_size))
+    {
+        // split the block
+        split_block(best_fit, rounded_size);
+    }
+
+    // mark the block as used
+    make_block_used(best_fit);
+
+    // in PART B, we need to remove the block from the free list
+    // remove_from_free_list(best_fit);
+
+    // return the address of the allocated memory
+    return get_block_payload(best_fit);
 }
 
 /*
@@ -673,9 +931,56 @@ void* balloc(size_t size) {
  * - -1 on failure
  *
  */
-int bfree(void *ptr) {
-    // TODO (required)
-    return 0;
+int bfree(void *ptr)
+{
+    if (!ptr)
+    {
+        return -1;
+    }
+
+    // check if the pointer is aligned
+    if ((uintptr_t)ptr % BLOCK_ALIGNMENT != 0)
+    {
+        return -1;
+    }
+
+    // convert
+    BlockHeader *block = get_header_from_payload(ptr);
+
+    // ensure the block is in the heap
+    if (block < heap_start || block > (BlockHeader *)((char *)heap_start + heap_size))
+    {
+        return -1;
+    }
+
+    // ensure the block is free
+    if (get_block_abit(block) != ABIT_USED)
+    {
+        return -1;
+    }
+
+    // mark the block as free
+    make_block_free(block);
+
+    // coalesce with the previous block
+    BlockHeader *prev = get_prev_adjacent_block(block);
+    BlockHeader *next = get_next_adjacent_block(block);
+
+    if (prev && get_block_abit(prev) == ABIT_FREE)
+    {
+        coalesce_with_next_block(prev);
+        block = prev;
+    }
+
+    if (next && !is_end_mark(next) && get_block_abit(next) == ABIT_FREE)
+    {
+        coalesce_with_next_block(block);
+    }
+
+    // in PART B, we need to add the block to the free list
+    // add_to_free_list(block);
+
+    return 0; // success
 }
 
 /*
@@ -692,30 +997,34 @@ int bfree(void *ptr) {
  * - 0 on success
  * - -1 on failure
  */
-int init_heap(size_t size) {
+int init_heap(size_t size)
+{
 
     // Prevent multiple calls to initialize the heap
     static int allocated_once = 0;
-    if (allocated_once != 0) {
+    if (allocated_once != 0)
+    {
         fprintf(stderr,
-        "Error: init_heap has allocated space during a previous call\n");
+                "Error: init_heap has allocated space during a previous call\n");
         return -1;
     }
 
     // Get the pagesize from the OS... this is almost certainly 4096 bytes (4KB).
     int pagesize = getpagesize();
 
-    if ((size < 1) || ((size % pagesize) != 0)) {
+    if ((size < 1) || ((size % pagesize) != 0))
+    {
         fprintf(stderr, "Error: Requested block size is not a positive"
-                " multiple of page size.\n");
+                        " multiple of page size.\n");
         return -1;
     }
 
     // Using mmap to allocate memory + enough space for guard pages.
     // (see man mmap if you are curious)
     void *mmap_ptr = mmap(NULL, size + 2 * pagesize,
-            PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-    if (MAP_FAILED == mmap_ptr) {
+                          PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (MAP_FAILED == mmap_ptr)
+    {
         fprintf(stderr, "Error: mmap cannot allocate space\n");
         allocated_once = 0;
         return -1;
@@ -729,14 +1038,14 @@ int init_heap(size_t size) {
     // the heap, we will get a segfault, rather than a silent memory corruption.
     // (see man mprotect if you are curious)
     void *start_guard_page = mmap_ptr;
-    void *end_guard_page = ((char*)mmap_ptr) + pagesize + size;
+    void *end_guard_page = ((char *)mmap_ptr) + pagesize + size;
 
     mprotect(start_guard_page, pagesize, PROT_NONE);
     mprotect(end_guard_page, pagesize, PROT_NONE);
 
     // Create an "end mark" -- a block at the end of the heap that is never
     // free. This reduces the number of special cases we need to deal with.
-    BlockHeader *end_mark = (BlockHeader*)((char*)end_guard_page - MIN_BLOCK_SIZE);
+    BlockHeader *end_mark = (BlockHeader *)((char *)end_guard_page - MIN_BLOCK_SIZE);
     end_mark->size_status = END_MARK_MAGIC;
 
     // Initially there is only one big free block in the heap.
@@ -746,10 +1055,14 @@ int init_heap(size_t size) {
     //
     // Set p-bit as allocated in header to avoid trying to coalesce it with
     // invalid memory before the heap. Note the a-bit is set as free.
-    heap_start = (BlockHeader*)(((char*)start_guard_page) + pagesize);
+    heap_start = (BlockHeader *)(((char *)start_guard_page) + pagesize);
+
+    // DO NOT CHANGE ANYTHING ABOVE THIS LINE
+    // TODO: You may change the remainder of this function as needed for your
+    // implementation.
     set_block_header(heap_start,
-            heap_size - MIN_BLOCK_SIZE - sizeof(BlockHeader),
-            ABIT_FREE, PBIT_USED);
+                     heap_size - MIN_BLOCK_SIZE - sizeof(BlockHeader),
+                     ABIT_FREE, PBIT_USED);
 
     // Make the block free. This takes care of the footer and free list too.
     make_block_free(heap_start);
@@ -769,14 +1082,15 @@ int init_heap(size_t size) {
  * End    : address of the last byte in the block
  * Size   : size of the block as stored in the block header
  */
-void disp_heap() {
+void disp_heap()
+{
     BlockHeader *current = heap_start;
     BlockHeader *next_block;
 
     size_t counter = 1;
-    size_t used_size =  0;
-    size_t free_size =  0;
-    int is_used   = -1;
+    size_t used_size = 0;
+    size_t free_size = 0;
+    int is_used = -1;
     int is_p_used = -1;
     size_t size = 0;
 
@@ -784,12 +1098,13 @@ void disp_heap() {
     fprintf(stdout, "Heap Size: %d\n", heap_size);
 
     fprintf(stdout,
-        "*********************************** HEAP: Block List ****************************\n");
+            "*********************************** HEAP: Block List ****************************\n");
     fprintf(stdout, "No.\tStatus\tPrev\tBegin\t\tEnd\t\tSize\n");
     fprintf(stdout,
-        "---------------------------------------------------------------------------------\n");
+            "---------------------------------------------------------------------------------\n");
 
-    while (!is_end_mark(current)) {
+    while (!is_end_mark(current))
+    {
         is_used = get_block_abit(current) == ABIT_USED;
         is_p_used = get_block_pbit(current) == PBIT_USED;
         next_block = get_next_adjacent_block(current);
@@ -812,14 +1127,14 @@ void disp_heap() {
     }
 
     fprintf(stdout,
-        "---------------------------------------------------------------------------------\n");
+            "---------------------------------------------------------------------------------\n");
     fprintf(stdout,
-        "*********************************************************************************\n");
+            "*********************************************************************************\n");
     fprintf(stdout, "Total used size = %4u\n", used_size);
     fprintf(stdout, "Total free size = %4u\n", free_size);
     fprintf(stdout, "Total size      = %4u\n", used_size + free_size);
     fprintf(stdout,
-        "*********************************************************************************\n");
+            "*********************************************************************************\n");
     fflush(stdout);
 
     return;
