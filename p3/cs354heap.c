@@ -9,7 +9,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Main File:        cs354heap.c
 // This File:        cs354heap.c
-// Other Files:      No core files, tests/*.c (Tests)
+// Other Files:      No additional core files, tests/*.c (Tests)
 // Semester:         CS 354 Fall 2023
 // Instructor:       Mark Mansi
 //
@@ -29,7 +29,7 @@
 // Online sources:   NONE
 ////////////////////////////////////////////////////////////////////////////////
 
-#include <unistd.h>
+#include <unistd.h> 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -418,7 +418,11 @@ static void *get_block_payload(BlockHeader *header)
  */
 static BlockHeader *get_next_adjacent_block(BlockHeader *header)
 {
-    // calculates the address of the next block header by moving past the current header and the payload
+    if (is_end_mark(header))
+    {
+        return NULL;
+    }
+
     return (BlockHeader *)(((char *)header) + sizeof(BlockHeader) + get_block_size(header));
 }
 
@@ -452,14 +456,14 @@ static BlockHeader *get_header_from_payload(void *payload)
  */
 static BlockFooter *find_block_footer(BlockHeader *header)
 {
-    // extract the size of the block from the header
+    // Extract the size of the block (payload) from the header
     size_t size = get_block_size(header);
 
-    // point to byte after the block
-    char *footer_address = ((char *)header) + sizeof(BlockHeader) + size; // ??
+    // footer location = header location + header size + block size
+    char *footer_address = ((char *)header) + sizeof(BlockHeader) + size;
 
-    // go back in memory by the size of the footer to get the address of the footer
-    return (BlockFooter *)(footer_address - sizeof(BlockFooter));
+    // cast the address to a BlockFooter pointer and return it
+    return (BlockFooter *)footer_address;
 }
 
 /*
@@ -474,15 +478,15 @@ static BlockFooter *find_block_footer(BlockHeader *header)
  * Returns:
  * - a pointer to the corresponding block header for the block containing this footer.
  */
-static BlockHeader *find_block_header(BlockFooter *footer)
-{
-    size_t block_size = footer->size;
+// static BlockHeader *find_block_header(BlockFooter *footer)
+// {
+//     size_t block_size = footer->size;
 
-    // calculate the address of the header by moving back in memory by the size of the header
-    char *header_address = ((char *)footer) - block_size - sizeof(BlockFooter);
+//     // header location = footer location - block size - header size (opposite of find_block_footer)
+//     char *header_address = ((char *)footer) - block_size - sizeof(BlockFooter);
 
-    return (BlockHeader *)header_address;
-}
+//     return (BlockHeader *)header_address;
+// }
 
 /*
  * Similar to get_next_adjacent_block except in the other direction.
@@ -490,23 +494,23 @@ static BlockHeader *find_block_header(BlockFooter *footer)
  * NOTE: this only works if the previous block is FREE because we need a valid
  * footer! Check your p-bits!
  */
-static BlockHeader *get_prev_adjacent_block(BlockHeader *header)
-{
-    // the footer of the previous block is right before the header of the current block
-    BlockFooter *prev_footer = (BlockFooter *)(((char *)header) - sizeof(BlockFooter));
+// static BlockHeader *get_prev_adjacent_block(BlockHeader *header)
+// {
+//     // the footer of the previous block is right before the header of the current block
+//     BlockFooter *prev_footer = (BlockFooter *)(((char *)header) - sizeof(BlockFooter));
 
-    // need to check if the previous block is free
-    if (get_block_pbit(get_header_from_payload(prev_footer)) == PBIT_FREE)
-    {
-        // if it is free we can return the header of the previous block
-        return find_block_header(prev_footer);
-    }
-    else
-    {
-        // if the previous block is not free, we can't
-        return NULL;
-    }
-}
+//     // need to check if the previous block is free
+//     if (get_block_pbit(get_header_from_payload(prev_footer)) == PBIT_FREE)
+//     {
+//         // if it is free we can return the header of the previous block
+//         return find_block_header(prev_footer);
+//     }
+//     else
+//     {
+//         // if the previous block is not free, we can't
+//         return NULL;
+//     }
+// }
 
 /*
  * Set the size in the footer for this block, leaving the rest of the footer untouched.
@@ -598,37 +602,46 @@ static size_t round_up_block_size(size_t unrounded)
  * Parameters:
  * - header: the header of a free block to remove from the free list.
  */
-static void remove_from_free_list(BlockHeader *header)
-{
+// static void remove_from_free_list(BlockHeader *header)
+// {
 
-    // make sure the block is free
-    assert(get_block_abit(header) == ABIT_FREE); // ?? could use more robust error handling
+//     // make sure the block is free
+//     assert(get_block_abit(header) == ABIT_FREE); // ?? improve
 
-    // get the footer of the block
-    BlockFooter *footer = find_block_footer(header);
+//     // get the footer of the block
+//     BlockFooter *footer = find_block_footer(header);
 
-    // retrieve the previous and next blocks from the footer
-    BlockHeader *prev = footer->free_list_prev;
-    BlockHeader *next = footer->free_list_next;
+//     // check if block footer is valid
+//     assert(footer->size && footer->size == get_block_size(header) - sizeof(BlockHeader));
 
-    if (prev)
-    {
-        // update the previous block's next pointer
-        BlockFooter *prev_footer = find_block_footer(prev);
-        prev_footer->free_list_next = next;
-    }
+//     // get the previous and next blocks
+//     BlockFooter *prev = footer->free_list_prev;
+//     BlockFooter *next = footer->free_list_next;
 
-    if (next)
-    {
-        // update the next block's previous pointer
-        BlockFooter *next_footer = find_block_footer(next);
-        next_footer->free_list_prev = prev;
-    }
+//     // ensure pointers are valid
+//     if (prev && next) // if both are valid
+//     {
+//         // we need to update both pointers
+//         next->free_list_prev = prev;
+//         prev->free_list_next = next;
+//     }
+//     else if (prev) // etc. for the other cases
+//     {
+//         prev->free_list_next = NULL;
+//     }
+//     else if (next)
+//     {
+//         next->free_list_prev = NULL;
+//     }
+//     else
+//     {
+//         free_list = NULL;
+//     }
 
-    // clear the pointers in the footer
-    footer->free_list_prev = NULL;
-    footer->free_list_next = NULL;
-}
+//     // update the footer of the block to remove it from the free list
+//     footer->free_list_prev = NULL;
+//     footer->free_list_next = NULL;
+// }
 
 /*
  * Add the given block to the free list.
@@ -636,26 +649,10 @@ static void remove_from_free_list(BlockHeader *header)
  * Parameters:
  * - header: the header of a free block to add to the free list.
  */
-static void add_to_free_list(BlockHeader *header)
-{
-    // make sure the block is free
-    assert(get_block_abit(header) == ABIT_FREE); // ?? could use more robust error handling
-
-    // get the footer of the block
-    BlockFooter *footer = find_block_footer(header);
-
-    // if there is a current head of the free list, update its previous pointer
-    if (free_list)
-    {
-        BlockFooter *curr_head_footer = find_block_footer(free_list);
-        curr_head_footer->free_list_prev = header;
-        footer->free_list_next = free_list;
-    }
-
-    // update the free list head
-    free_list = header;
-    footer->free_list_prev = NULL; // it's the head, so there is no previous block
-}
+// static void add_to_free_list(BlockHeader *header)
+// {
+//     // TODO in Part B 
+// }
 
 /*
  * Mark this block as used. Update its header. Update the header of its
@@ -696,15 +693,13 @@ static void make_block_free(BlockHeader *header)
 {
     header->size_status &= ~ABIT_USED;
 
-    // update the footer
-    BlockFooter *footer = find_block_footer(header);
-    footer->free_list_prev = NULL;
-    footer->free_list_next = NULL;
-
     // for PART B, we need to add the block to the free list
     // add_to_free_list(header);
 
-    // get neighbor block
+    // set a bit in the header
+    set_block_abit(header, ABIT_FREE);
+
+    // get neighbor block and set its p-bit
     BlockHeader *neighbor = get_next_adjacent_block(header);
     if (!is_end_mark(neighbor))
     {
@@ -799,33 +794,33 @@ static BlockHeader *split_block(BlockHeader *header, size_t desired_size)
  * - header: the block that comes first in the heap spatially (not first in the
  *   free list).
  */
-static void coalesce_with_next_block(BlockHeader *header)
-{
-    // retrieve the next block
-    BlockHeader *next_block = get_next_adjacent_block(header);
+// static void coalesce_with_next_block(BlockHeader *header)
+// {
+//     // retrieve the next block
+//     BlockHeader *next_block = get_next_adjacent_block(header);
 
-    // ensure the curr and next blocks are free
-    if (get_block_abit(header) != ABIT_FREE || get_block_abit(next_block) != ABIT_FREE)
-    {
-        return; // if either block is not free, we can't coalesce
-    }
+//     // ensure the curr and next blocks are free
+//     if (get_block_abit(header) != ABIT_FREE || get_block_abit(next_block) != ABIT_FREE)
+//     {
+//         return; // if either block is not free, we can't coalesce
+//     }
 
-    // update the size of the current block
-    size_t new_size = get_block_size(header) + get_block_size(next_block) + sizeof(BlockHeader);
-    set_block_header(header, new_size, ABIT_FREE, get_block_pbit(header));
+//     // update the size of the current block
+//     size_t new_size = get_block_size(header) + get_block_size(next_block) + sizeof(BlockHeader);
+//     set_block_header(header, new_size, ABIT_FREE, get_block_pbit(header));
 
-    // update the footer of the current block
-    BlockFooter *footer = find_block_footer(header);
-    set_block_footer_size(footer, new_size);
+//     // update the footer of the current block
+//     BlockFooter *footer = find_block_footer(header);
+//     set_block_footer_size(footer, new_size);
 
-    // handle free list pointers
+//     // handle free list pointers
 
-    // remove the next block from the free list
-    remove_from_free_list(next_block);
+//     // remove the next block from the free list
+//     remove_from_free_list(next_block);
 
-    // add the current block to the free list
-    add_to_free_list(header);
-}
+//     // add the current block to the free list
+//     add_to_free_list(header);
+// }
 
 ///////////////////////////////////////////////////////////////////////////////
 // The actual heap implementation
@@ -933,54 +928,39 @@ void *balloc(size_t size)
  */
 int bfree(void *ptr)
 {
+    // all we do in part a is set the a-bit to free and p-bit to free
+
+    // check if ptr is NULL
     if (!ptr)
     {
         return -1;
     }
 
-    // check if the pointer is aligned
-    if ((uintptr_t)ptr % BLOCK_ALIGNMENT != 0)
+    // check if ptr is a multiple of 8
+    if ((size_t)ptr % 8 != 0)
     {
         return -1;
     }
 
-    // convert
-    BlockHeader *block = get_header_from_payload(ptr);
-
-    // ensure the block is in the heap
-    if (block < heap_start || block > (BlockHeader *)((char *)heap_start + heap_size))
+    // check if ptr is outside of the heap space
+    if ((size_t)ptr < (size_t)heap_start || (size_t)ptr > (size_t)heap_start + heap_size)
     {
         return -1;
     }
 
-    // ensure the block is free
-    if (get_block_abit(block) != ABIT_USED)
+    // get the header of the block
+    BlockHeader *header = get_header_from_payload(ptr);
+
+    // check if the block is already freed
+    if (get_block_abit(header) == ABIT_FREE)
     {
         return -1;
     }
 
-    // mark the block as free
-    make_block_free(block);
+    // make the block free
+    make_block_free(header);
 
-    // coalesce with the previous block
-    BlockHeader *prev = get_prev_adjacent_block(block);
-    BlockHeader *next = get_next_adjacent_block(block);
-
-    if (prev && get_block_abit(prev) == ABIT_FREE)
-    {
-        coalesce_with_next_block(prev);
-        block = prev;
-    }
-
-    if (next && !is_end_mark(next) && get_block_abit(next) == ABIT_FREE)
-    {
-        coalesce_with_next_block(block);
-    }
-
-    // in PART B, we need to add the block to the free list
-    // add_to_free_list(block);
-
-    return 0; // success
+    return 1; // success
 }
 
 /*

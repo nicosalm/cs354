@@ -16,15 +16,15 @@
  */
 #define BLOCK_ALIGNMENT 8
 
-int   init_heap(size_t size);
-void  disp_heap();
+int init_heap(size_t size);
+void disp_heap();
 
-void* balloc(size_t size);
-int   bfree(void *ptr);
+void *balloc(size_t size);
+int bfree(void *ptr);
 
-void* malloc(size_t size) {
+void *malloc(size_t size)
+{
     return NULL;
 }
 
 #endif // __cs354heap_h__
-
