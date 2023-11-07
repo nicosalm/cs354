@@ -1,0 +1,9 @@
+# csim
+
+Contents:
+- Makefile: a useful makefile for building and testing your simulator.
+    - You are encouraged to try out different cache paramters by changing
+      TEST_S, TEST_W, TEST_b, and TEST_V in the makefile.
+- csim.c: EDIT this file... implement a cache simulator.
+- csim-ref: a reference implementation. You implementation should match its output exactly.
+- traces: some sample memory access traces for you to test your simulator.
