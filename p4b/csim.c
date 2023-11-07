@@ -1,11 +1,32 @@
-// ADD YOUR HEADER COMMENT
+///////////////////////////////////////////////////////////////////////////////
+//
+// Copyright 2020-2023 Mark Mansi, Deb Deppeler based on work by Jim Skrentny
+// Posting or sharing this file is prohibited, including any changes/additions.
+// Used by permission FALL 2023, CS354-markm
+//
+///////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////////////////////////////////////////////////////////
+// Main File:        csim.c
+// This File:        csim.c
+// Other Files:      None
+// Semester:         CS 354 Fall 2023
+// Instructor:       Mark Mansi
 //
-// Copyright 2013,2019-2020
-// Posting or sharing this file is prohibited, including any changes/additions.
-// Used by permission for Spring 2023
+// Author:           Nico Salm
+// Email:            nbsalm@wisc.edu
+// CS Login:         salm
+// GG#:              n/a
+//                   (See https://canvas.wisc.edu/groups for your GG number)
 //
+/////////////////////////// OTHER SOURCES OF HELP //////////////////////////////
+//                   Fully acknowledge and credit all sources of help,
+//                   including family, friends, classmates, tutors,
+//                   Peer Mentors, TAs, and Instructor.
+//
+// Persons:          NONE
+//
+// Online sources:   NONE
 ////////////////////////////////////////////////////////////////////////////////
 
 /*
