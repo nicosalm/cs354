@@ -821,39 +821,34 @@ static void coalesce_with_next_block(BlockHeader *header)
  */
 void *balloc(size_t size)
 {
-    if (size < 1)
+    // validate size
+    if (size < 1 || size > heap_size)
     {
         return NULL;
     }
 
-    // round up the size
-    size_t rounded_size = round_up_block_size(size);
-    if (rounded_size < MIN_BLOCK_SIZE)
+    size = round_up_block_size(size); // round up the size to the nearest multiple of 8
+
+    if (size < MIN_PAYLOAD_SIZE) // check if the size is too small!!
     {
-        rounded_size = MIN_BLOCK_SIZE;
+        size = MIN_PAYLOAD_SIZE;
     }
 
-    // find the best fit block
-    BlockHeader *best_fit = best_fit_select_block(rounded_size);
-
-    // check if there is a best fit block
+    // then find the best fit block
+    BlockHeader *best_fit = best_fit_select_block(size);
     if (!best_fit)
     {
-        // no best fit block found
         return NULL;
     }
 
-    // check if the best fit block is an exact match. if not, split the block
-    if (should_split(best_fit, rounded_size))
+    // check if the best fit is an exact match and split if not
+    if (should_split(best_fit, size))
     {
-        // split the block
-        split_block(best_fit, rounded_size);
+        split_block(best_fit, size);
     }
 
-    // mark the block as used
     make_block_used(best_fit);
 
-    // return the address of the allocated memory
     return get_block_payload(best_fit);
 }
 
