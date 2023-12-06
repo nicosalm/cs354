@@ -38,7 +38,6 @@
 #include <string.h>
 #include <assert.h>
 #include "cs354heap.h"
-
 ///////////////////////////////////////////////////////////////////////////////
 // Define some useful constants and types
 //
@@ -68,7 +67,7 @@
  */
 #define A_BITMASK (1 << 1)
 
-/*
+/**
  * A bitmask to help us get the size from header blocks.
  */
 #define SIZE_BITMASK 0xFFFFFFF8
